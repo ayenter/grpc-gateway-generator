@@ -46,8 +46,15 @@ echo "PREPARING... Moving annotations.proto and http.proto to another folder tem
 mv ${PROTOS_PATH}/google/api/annotations.proto ${DESTINATION_PATH}
 mv ${PROTOS_PATH}/google/api/http.proto ${DESTINATION_PATH}
 
+SYMLINK_PROTOS=$(find ${PROTOS_PATH} -type l -name "*.proto")
+if [ ${#SYMLINK_PROTOS[@]} -gt 0 ]; then
+  PROTO_TYPE="l"
+else
+  PROTO_TYPE="f"
+fi
+
 echo "GENERATING... stubs go"
-find ${PROTOS_PATH} -type f -name "*.proto" -exec protoc -I${PROTOS_PATH} \
+find ${PROTOS_PATH} -type $PROTO_TYPE -name "*.proto" -exec protoc -I${PROTOS_PATH} \
   --proto_path=${PROTOS_PATH} \
   -I${GOPATH}/src \
   -I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
@@ -55,7 +62,7 @@ find ${PROTOS_PATH} -type f -name "*.proto" -exec protoc -I${PROTOS_PATH} \
 	{} \;
 
 echo "GENERATING... reverse-proxy"
-find ${PROTOS_PATH} -type f -name "*.proto" -exec protoc -I${PROTOS_PATH} \
+find ${PROTOS_PATH} -type $PROTO_TYPE -name "*.proto" -exec protoc -I${PROTOS_PATH} \
   --proto_path=${PROTOS_PATH} \
   -I${GOPATH}/src \
   -I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
@@ -63,7 +70,7 @@ find ${PROTOS_PATH} -type f -name "*.proto" -exec protoc -I${PROTOS_PATH} \
 	{} \;
 
 echo "GENERATING... swagger definitions"
-find ${PROTOS_PATH} -type f -name "*.proto" -exec protoc -I${PROTOS_PATH} \
+find ${PROTOS_PATH} -type $PROTO_TYPE -name "*.proto" -exec protoc -I${PROTOS_PATH} \
   --proto_path=${PROTOS_PATH} \
   -I${GOPATH}/src \
   -I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
